@@ -14,6 +14,10 @@ var SKILL_NAME = 'Lightpad';
 
 /***********************************************************************
  * Set handlers for Lambda request input.
+ * 
+ * @param Lambda request
+ * @param Context of the lambda request
+ * @param Variable for error handling
  **********************************************************************/
 exports.handler = function(event, context, callback) {
     var alexa = Alexa.handler(event, context);
