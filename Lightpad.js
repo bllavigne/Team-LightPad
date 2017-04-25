@@ -1,10 +1,13 @@
 'use strict';
 var Alexa = require('alexa-sdk');
 
+// Set to application ID from skillset
 var APP_ID = "amzn1.ask.skill.bdd0dd4f-f85a-482c-a657-98d0028fcb33";
 var SKILL_NAME = 'Lightpad';
 
-
+/***********************************************************************
+ * Set handlers for Lambda request input.
+ **********************************************************************/
 exports.handler = function(event, context, callback) {
     var alexa = Alexa.handler(event, context);
     alexa.appId = APP_ID;
@@ -12,27 +15,25 @@ exports.handler = function(event, context, callback) {
     alexa.execute();
 };
 
+// Hanldler Functions
 var handlers = {
-    'LaunchRequest': function () {
-        this.emit('Test');
-    },
+    
+    /**************************************************************************
+     * Change all lights at once using lambda request value 'Position'.
+     **************************************************************************/
     'AllRoomLights': function () {
-        var position = this.event.request.intent.slots.Position.value;
-        this.emit('ChangeAllLights', position);
-    },
-    'ChangeAllLights': function (position) {
-        // Position set initially to off
+        
+        // Get value from lambda request
+        var position = this.event.request.intent.slots.Position.value
         var p = 0;
         
         // On position
         if (position == "on"){
             p = 1;
         }
-        
+        var temp = this;
         // Create speech output
         var speechOutput = "All lights turned " + position;
-        
-        var temp = this;
         
         changeAllLightsRequestFunction(function requestCallback(err) {
         
@@ -40,17 +41,22 @@ var handlers = {
             if (err) {
                 console.log('HTTP Error: request not sent');
             }
-        
-            temp.emit(':tellWithCard', speechOutput, SKILL_NAME, 'Change all lights.');
+            
+            // Produce card on Alexa app
+            temp.emit(':tellWithCard', speechOutput, SKILL_NAME, 'Turned '+position+' all lights.');
         }, p);
 
     },
+    
+    /**************************************************************************
+     * Change a single light using lambda request values 'Position' and 'Room'.
+     **************************************************************************/
     'SingleRoomLight': function () {
+        
+        // Get values from lambda request
         var position = this.event.request.intent.slots.Position.value;
         var room = this.event.request.intent.slots.Room.value;
-        this.emit('ChangeLight', position, room);
-    },
-    'ChangeLight': function (position, room) {
+        
         // Often interprets the word "two" as "to"
         var roomNum = room;
         if(!(room < 2 || room > 2)){
@@ -64,11 +70,9 @@ var handlers = {
         if (position == "on"){
             p = 1;
         }
-        
+        var temp = this;
         // Create speech output
         var speechOutput = "Light " + roomNum + " turned " + position;
-        
-        var temp = this;
         
         changeSingleLightRequestFunction(function requestCallback(err) {
         
@@ -77,16 +81,21 @@ var handlers = {
                 console.log('HTTP Error: request not sent');
             }
         
-            temp.emit(':tellWithCard', speechOutput, SKILL_NAME, 'Change a single light');
+            // Produce card on Alexa app
+            temp.emit(':tellWithCard', speechOutput, SKILL_NAME, 'Turned '+position+' light '+roomNum+'.');
         }, p , roomNum);
 
     },
-      'FloorLights': function() {
+    
+    /**************************************************************************
+     * Change entire floor using lambda request values 'Position' and 'Floor'.
+     **************************************************************************/
+    'FloorLights': function () {
+        
+        // Get values from lambda request
         var position = this.event.request.intent.slots.Position.value;
         var floor = this.event.request.intent.slots.Floor.value;
-        this.emit('ChangeFloor', position, floor);
-    },
-    'ChangeFloor': function (position, floor) {
+        
         // Often interprets the word "two" as "to"
         var floorNum = floor;
         if(floor != 1 && floor != 3){
@@ -99,11 +108,9 @@ var handlers = {
         if (position == "on"){
             p = 1;
         }
-        
+        var temp = this;
         // Create speech output
         var speechOutput = "Floor " + floorNum + " turned " + position;
-        
-        var temp = this;
         
         changeFloorLightsRequestFunction(function requestCallback(err) {
         
@@ -112,30 +119,53 @@ var handlers = {
                 console.log('HTTP Error: request not sent');
             }
         
-            temp.emit(':tellWithCard', speechOutput, SKILL_NAME, 'Change a floor');
+            // Produce card on Alexa app
+            temp.emit(':tellWithCard', speechOutput, SKILL_NAME, 'Turned '+position+' floor '+floorNum+'.');
         }, p , floorNum);
 
     },
+    
+    /**************************************************************************
+     * Help response to give instruction to user.
+     **************************************************************************/
     'AMAZON.HelpIntent': function () {
-        var speechOutput = "Ask lightpad to turn on or off light one through nine, floor one through three, or all lights. What can I help you with?";
-        this.emit(':tell', speechOutput);
+        var speechOutput = "Ask lightpad to turn on or off light one through nine, floor one through three, or all lights.";
+        this.emit(':tellWithCard', speechOutput+' What can I help you with?', SKILL_NAME, 'Help: '+speechOutput);
     },
+    
+    /**************************************************************************
+     * When request is canceled by user.
+     **************************************************************************/
     'AMAZON.CancelIntent': function () {
         this.emit(':tell', 'Goodbye!');
     },
+    
+    /**************************************************************************
+     * When request is stopped by user.
+     **************************************************************************/
     'AMAZON.StopIntent': function () {
         this.emit(':tell', 'Goodbye!');
     },
+    
+    /**************************************************************************
+     * When request is unknown.
+     **************************************************************************/
     'Unhandled': function() {
         this.emit('AMAZON.HelpIntent');
     },
 };
 
-
+/***********************************************************************
+ * Carry out communications to change all lights (change web page).
+ * 
+ * @param variable for error handling
+ * @param position of lights ('on' or 'off')
+ **********************************************************************/
 function changeAllLightsRequestFunction(requestCallback, position){
         
     var http = require('http');
 
+    // Web page to change all light values
     var url = "http://cis.gvsu.edu/~lavigneb/lightpad/changeAllLights.php?light=" + position;
 
     http.get(url, function(res) {
@@ -146,10 +176,18 @@ function changeAllLightsRequestFunction(requestCallback, position){
     });
 }
 
+/***********************************************************************
+ * Carry out communications to change a single light (change web page).
+ * 
+ * @param variable for error handling
+ * @param position of lights ('on' or 'off')
+ * @param room number (1-9)
+ **********************************************************************/
 function changeSingleLightRequestFunction(requestCallback, position, room){
         
     var http = require('http');
 
+    // Web page to change a room light value
     var url = "http://cis.gvsu.edu/~lavigneb/lightpad/light.php?light="+position+"&position="+room;
 
     http.get(url, function(res) {
@@ -160,10 +198,18 @@ function changeSingleLightRequestFunction(requestCallback, position, room){
     });
 }
 
+/***********************************************************************
+ * Carry out communications to change an entire floor (change web page).
+ * 
+ * @param variable for error handling
+ * @param position of lights ('on' or 'off')
+ * @param floor number (1-3)
+ **********************************************************************/
 function changeFloorLightsRequestFunction(requestCallback, position, floor){
         
     var http = require('http');
 
+    // Web page to change a floors light values
     var url = "http://cis.gvsu.edu/~lavigneb/lightpad/changeFloorLights.php?light="+position+"&floor="+floor;
 
     http.get(url, function(res) {
