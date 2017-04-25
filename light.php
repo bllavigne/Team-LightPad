@@ -1,14 +1,47 @@
-<?php 
-	$light = $_GET["light"];
+<?php
 
-	if(strcmp($light,'0') == 0){
-		echo "light = 0";
-		file_put_contents ('/home/moorbria/public_html/light.txt', $light );
-	}elseif(strcmp($light,'1') == 0){
-		echo "light = 1";
-		file_put_contents ('/home/moorbria/public_html/light.txt', $light );
-	}else{
-		echo "light = not 0 or 1";
-		// do nothing
+	$file = "/home/lavigneb/public_html/lights.xml";
+
+	$xml = simplexml_load_file($file);
+
+
+	$light = $_GET["light"];
+	$position = intval($_GET["position"]);
+
+    $p = "two";
+
+	switch ($position) {
+    	case 1:
+	        $p = "one";
+	        break;
+	    case 2:
+	        $p = "two";
+	        break;
+	    case 3:
+	        $p = "three";
+	        break;
+	    case 4:
+	        $p = "four";
+	        break;
+	    case 5:
+	        $p = "five";
+	        break;
+	    case 6:
+	        $p = "six";
+	        break;
+	    case 7:
+	        $p = "seven";
+	        break;
+	    case 8:
+	        $p = "eight";
+	        break;
+	    case 9:
+	        $p = "nine";
+	        break;
 	}
+
+
+	$xml->$p = $light;
+	
+	$xml->asXML($file);
 ?>
