@@ -1,6 +1,6 @@
 <?php
 
-$light = file_get_contents('/home/moorbria/public_html/light.txt');
+$light = file_get_contents('/home/lavigneb/public_html/lightpad/lights.xml');
 echo $light;
 
 ?>
