@@ -1,46 +1,58 @@
+
 <html>
 
 
 
 <head>
+<style>
+td {
+	height: 200px;
+	width: 200px;
+	border: thin solid black;
+}
+table{
+	border: thin solid black;
+	margin: 0 auto;
+}
+
+#table-wrapper{
+	width:100%;
+	height:100%;
+}
+
+</style>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
-<script type="text/javascript"> 
+<script type="text/javascript">
 
-
-
- $(document).ready(function() {
-
+$(document).ready(function() {  
 
     function functionToLoadFile(){
 
-      $.get('bulb.php', function(data) {
+		$.get('bulb.php', function(data) {
+			var xmlDoc = jQuery.parseXML(data);
+	        var myvar = data;
 
-       var myvar = data;
+			var cell = 1;
+			console.log(xmlDoc);
+			$(xmlDoc).find('root').children().each(function(){
+				console.log($(this).text());
+				if ($(this).text() == 1){
+					$("#" + cell).css("background-color", "yellow");
+				}else{
+					$("#" + cell).css("background-color", "black");
+				}
+				cell++;
+			});
 
-		if(myvar == '1'){
+        setTimeout(functionToLoadFile, 500);
 
-		document.body.style.backgroundColor = "blue";
-
-			} else {
-
-		document.body.style.backgroundColor = "black";
-
-		}
-
-       setTimeout(functionToLoadFile, 500);
-
-    });
-
+       });
     }
 
-
-
     setTimeout(functionToLoadFile, 10);
-
 });
-
 
 
 </script>
@@ -50,13 +62,25 @@
 <body>
 
 
-
-<p> HELLO WORLD</p>
-
-
-
-
-
+<div id="table-wrapper">
+<table>
+	<tr>
+		<td id="1"></td>
+		<td id="2"></td>
+		<td id="3"></td>
+	</tr>
+	<tr>
+		<td id="4"></td>
+		<td id="5"></td>
+		<td id="6"></td>
+	</tr>
+	<tr>
+		<td id="7"></td>
+		<td id="8"></td>
+		<td id="9"></td>
+	</tr>
+</table>
+</div>
 
 
 </body>
