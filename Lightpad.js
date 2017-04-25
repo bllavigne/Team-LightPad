@@ -1,3 +1,10 @@
+/**************************************************************************
+ * Lambda function to change light values for the LightPad skillset.
+ * 
+ * @authors Curtis Holden, Brandon LaVigne, Brian Moore
+ * @date April 25, 2017
+ **************************************************************************/
+
 'use strict';
 var Alexa = require('alexa-sdk');
 
